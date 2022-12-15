@@ -1,0 +1,682 @@
+---------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\jaker\Documents\MS_in_Economics_and_CS\ECON550_Econometrics\Stata_Project\FinalProjectLog_Chaud
+> hariKasroviReichlin.txt
+  log type:  text
+ opened on:  11 Mar 2022, 16:02:46
+
+. 
+. *Drop unused variables
+. drop educ classwkr
+
+. 
+. *Missing Values
+. replace ftotinc = . if ftotinc == 9999999
+(156,055 real changes made, 156,055 to missing)
+
+. replace incwage = . if incwage >= 999998 | incwage == 0
+(1,649,135 real changes made, 1,649,135 to missing)
+
+. replace classwkrd = . if classwkrd == 0
+(1,328,286 real changes made, 1,328,286 to missing)
+
+. replace occ = . if occ == 0 | occ >= 9800
+(1,334,913 real changes made, 1,334,913 to missing)
+
+. numlabel, add
+
+. 
+. *Recode marital status as a dummy variable
+. tab marst
+
+            marital status |      Freq.     Percent        Cum.
+---------------------------+-----------------------------------
+1. married, spouse present |  1,338,592       41.32       41.32
+ 2. married, spouse absent |     60,316        1.86       43.18
+              3. separated |     41,986        1.30       44.48
+               4. divorced |    296,419        9.15       53.63
+                5. widowed |    175,626        5.42       59.05
+   6. never married/single |  1,326,614       40.95      100.00
+---------------------------+-----------------------------------
+                     Total |  3,239,553      100.00
+
+. recode marst (1/2=1) (3/6=0)
+(1900961 changes made to marst)
+
+. label drop MARST
+
+. label define MARST 0 "Single" 1 "Married"
+
+. rename marst married
+
+. 
+. *Recode sex FEMALE=1 MALE=0
+. tab sex
+
+        sex |      Freq.     Percent        Cum.
+------------+-----------------------------------
+    1. male |  1,588,332       49.03       49.03
+  2. female |  1,651,221       50.97      100.00
+------------+-----------------------------------
+      Total |  3,239,553      100.00
+
+. recode sex (1=0) (2=1)
+(3239553 changes made to sex)
+
+. label dir
+MARST
+YNGCH
+UHRSWORK
+SEX
+NCHLT5
+NCHILD
+METRO
+EDUCD
+EDUC
+CLASSWKRD
+CLASSWKR
+AGE
+
+. label drop SEX
+
+. label define SEX 0 "Male" 1 "Female"
+
+. rename sex female
+
+. 
+. recode metro(0=1) (2/4=1) (1=0)
+(3239553 changes made to metro)
+
+. label drop METRO
+
+. label define METRO 0 "Not in/near metropolitan area" 1 "In/near metropolitan area"
+
+. tab metro
+
+          metropolitan status |      Freq.     Percent        Cum.
+------------------------------+-----------------------------------
+Not in/near metropolitan area |    339,954       10.49       10.49
+    In/near metropolitan area |  2,899,599       89.51      100.00
+------------------------------+-----------------------------------
+                        Total |  3,239,553      100.00
+
+. 
+. *Recode education as categorical variable
+. tab educd
+
+       educational attainment [detailed |
+                               version] |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                                 1. n/a |     92,298        2.85        2.85
+              2. no schooling completed |     97,304        3.00        5.85
+          11. nursery school, preschool |     45,856        1.42        7.27
+                       12. kindergarten |     37,151        1.15        8.42
+                            14. grade 1 |     34,706        1.07        9.49
+                            15. grade 2 |     37,282        1.15       10.64
+                            16. grade 3 |     40,159        1.24       11.88
+                            17. grade 4 |     40,075        1.24       13.11
+                            22. grade 5 |     43,216        1.33       14.45
+                            23. grade 6 |     55,318        1.71       16.16
+                            25. grade 7 |     45,539        1.41       17.56
+                            26. grade 8 |     64,416        1.99       19.55
+                            30. grade 9 |     67,110        2.07       21.62
+                           40. grade 10 |     74,787        2.31       23.93
+                           50. grade 11 |     82,793        2.56       26.49
+             61. 12th grade, no diploma |     53,220        1.64       28.13
+        63. regular high school diploma |    606,773       18.73       46.86
+      64. ged or alternative credential |    105,385        3.25       50.11
+ 65. some college, but less than 1 year |    192,301        5.94       56.05
+71. 1 or more years of college credit,  |    378,171       11.67       67.72
+81. associate's degree, type not specif |    217,713        6.72       74.44
+                 101. bachelor's degree |    507,242       15.66       90.10
+                   114. master's degree |    227,364        7.02       97.12
+115. professional degree beyond a bache |     55,376        1.71       98.83
+                   116. doctoral degree |     37,998        1.17      100.00
+----------------------------------------+-----------------------------------
+                                  Total |  3,239,553      100.00
+
+. recode educd (2/26=0) (30/61=1) (63/64=2) (65/71=3) (81=4) (101=5) (114=6) (115=7) (116=8)
+(3147255 changes made to educd)
+
+. label drop EDUCD
+
+. label define EDUCD 0 "No HS" 1 "Some HS" 2 "HS Diploma or Equivalent" 3 "Some College" 4 "Associates Degree" 5 "Bac
+> helor's Degree" 6 "Master's Degree" 7 "Professional Degree" 8 "Doctoral Degree"
+
+. rename educd educ_simple
+
+. tab educ_simple
+
+  educational attainment |
+      [detailed version] |      Freq.     Percent        Cum.
+-------------------------+-----------------------------------
+                   No HS |    541,022       16.70       16.70
+                 Some HS |    370,208       11.43       28.13
+HS Diploma or Equivalent |    712,158       21.98       50.11
+            Some College |    570,472       17.61       67.72
+       Associates Degree |    217,713        6.72       74.44
+       Bachelor's Degree |    507,242       15.66       90.10
+         Master's Degree |    227,364        7.02       97.12
+     Professional Degree |     55,376        1.71       98.83
+         Doctoral Degree |     37,998        1.17      100.00
+-------------------------+-----------------------------------
+                   Total |  3,239,553      100.00
+
+. 
+. *Recode nchild as dummy variable 0=No children present 1 = at least 1 child present
+. recode nchild (0=0) (1/9=1), gen(child_pres)
+(447572 differences between nchild and child_pres)
+
+. label define Child_pres 0 "No children" 1 "At least 1 child"
+
+. label values child_pres Child_pres
+
+. 
+. 
+. recode nchlt5 (0=0) (1/9=1), gen(chlt5_pres)
+(56023 differences between nchlt5 and chlt5_pres)
+
+. label define Chlt5_pres 0 "No children under 5" 1 "At least 1 child under 5"
+
+. label values chlt5_pres Chlt5_pres
+
+. 
+. keep if age >= 25 & age <= 54
+(2,073,165 observations deleted)
+
+. 
+. 
+. *------------------------------Regressions Without Sample Restrictions-------------------------*
+. 
+. *RESET MISSPECIFICATION TEST
+. reghdfe incwage age metro uhrswork married i.female##i.child_pres, absorb(i.occ i.educ_simple i.classwkrd) vce(robu
+> st)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    922,704
+Absorbing 3 HDFE groups                           F(   7, 922157) =    9576.27
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.3746
+                                                  Adj R-squared   =     0.3742
+                                                  Within R-sq.    =     0.0976
+                                                  Root MSE        = 53425.9573
+
+------------------------------------------------------------------------------------------
+                         |               Robust
+                 incwage | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+                     age |   913.0814   6.317081   144.54   0.000     900.7002    925.4627
+                   metro |   7123.669   134.3405    53.03   0.000     6860.366    7386.972
+                uhrswork |    1097.72   6.688978   164.11   0.000      1084.61    1110.831
+                 married |   5057.295   112.0241    45.14   0.000     4837.731    5276.858
+                         |
+                  female |
+                 Female  |  -8902.675   164.3094   -54.18   0.000    -9224.716   -8580.634
+                         |
+              child_pres |
+       At least 1 child  |    12706.1   191.3742    66.39   0.000     12331.02    13081.19
+                         |
+       female#child_pres |
+Female#At least 1 child  |   -11420.6   225.0807   -50.74   0.000    -11861.75   -10979.45
+                         |
+                   _cons |  -28853.79   385.6704   -74.81   0.000    -29609.69   -28097.89
+------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         occ |       525           0         525     |
+ educ_simple |         9           1           8     |
+   classwkrd |         8           1           7    ?|
+-----------------------------------------------------+
+? = number of redundant parameters may be higher
+
+. 
+. predict yhat if e(sample)
+(option xb assumed; fitted values)
+(243,684 missing values generated)
+
+. 
+. reghdfe incwage age metro uhrswork married i.female##i.child_pres c.yhat#c.yhat c.yhat#c.yhat#c.yhat, absorb(i.occ 
+> i.educ_simple i.classwkrd) vce(robust)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    922,704
+Absorbing 3 HDFE groups                           F(   9, 922155) =   11770.72
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.3766
+                                                  Adj R-squared   =     0.3762
+                                                  Within R-sq.    =     0.1006
+                                                  Root MSE        = 53338.3406
+
+------------------------------------------------------------------------------------------
+                         |               Robust
+                 incwage | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+                     age |  -586.7076   35.98137   -16.31   0.000    -657.2299   -516.1854
+                   metro |  -4325.764   300.6008   -14.39   0.000    -4914.932   -3736.597
+                uhrswork |  -623.1153   38.83283   -16.05   0.000    -699.2263   -547.0043
+                 married |  -3277.263   224.8163   -14.58   0.000    -3717.895   -2836.631
+                         |
+                  female |
+                 Female  |   5446.945   379.1593    14.37   0.000     4703.806    6190.085
+                         |
+              child_pres |
+       At least 1 child  |  -10205.32   553.9966   -18.42   0.000    -11291.13   -9119.504
+                         |
+       female#child_pres |
+Female#At least 1 child  |   9907.987   532.0258    18.62   0.000     8865.234    10950.74
+                         |
+           c.yhat#c.yhat |   .0000238   7.13e-07    33.42   0.000     .0000224    .0000252
+                         |
+    c.yhat#c.yhat#c.yhat |  -1.03e-10   4.08e-12   -25.30   0.000    -1.11e-10   -9.51e-11
+                         |
+                   _cons |    48618.6   1619.953    30.01   0.000     45443.55    51793.66
+------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         occ |       525           0         525     |
+ educ_simple |         9           1           8     |
+   classwkrd |         8           1           7    ?|
+-----------------------------------------------------+
+? = number of redundant parameters may be higher
+
+. 
+. test _b[c.yhat#c.yhat] = _b[c.yhat#c.yhat#c.yhat] = 0
+
+ ( 1)  c.yhat#c.yhat - c.yhat#c.yhat#c.yhat = 0
+ ( 2)  c.yhat#c.yhat = 0
+       Constraint 2 dropped
+
+       F(  1,922155) = 1116.85
+            Prob > F =    0.0000
+
+. 
+. *Model 1
+. reghdfe incwage married i.female##i.child_pres age c.age#c.age metro uhrswork, absorb(i.occ i.educ_simple i.classwk
+> rd) vce(robust)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    922,704
+Absorbing 3 HDFE groups                           F(   8, 922156) =    9151.56
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.3748
+                                                  Adj R-squared   =     0.3745
+                                                  Within R-sq.    =     0.0980
+                                                  Root MSE        = 53414.3167
+
+------------------------------------------------------------------------------------------
+                         |               Robust
+                 incwage | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+                 married |   4969.994   111.9004    44.41   0.000     4750.673    5189.315
+                         |
+                  female |
+                 Female  |   -8790.07   164.5421   -53.42   0.000    -9112.567   -8467.573
+                         |
+              child_pres |
+       At least 1 child  |   12186.39   193.1515    63.09   0.000     11807.82    12564.96
+                         |
+       female#child_pres |
+Female#At least 1 child  |   -11561.1   225.0741   -51.37   0.000    -12002.23   -11119.96
+                         |
+                     age |   2299.281   64.82431    35.47   0.000     2172.228    2426.335
+                         |
+             c.age#c.age |  -17.41507   .8398182   -20.74   0.000    -19.06109   -15.76906
+                         |
+                   metro |   7112.153   134.3425    52.94   0.000     6848.846     7375.46
+                uhrswork |   1095.942   6.686302   163.91   0.000     1082.837    1109.047
+                   _cons |  -54713.21   1225.496   -44.65   0.000    -57115.14   -52311.28
+------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         occ |       525           0         525     |
+ educ_simple |         9           1           8     |
+   classwkrd |         8           1           7    ?|
+-----------------------------------------------------+
+? = number of redundant parameters may be higher
+
+. 
+. *Model 2
+. reghdfe incwage married i.female##i.chlt5_pres nchild age c.age#c.age metro uhrswork, absorb(i.occ i.educ_simple i.
+> classwkrd) vce(robust)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    922,704
+Absorbing 3 HDFE groups                           F(   9, 922155) =    8115.45
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.3730
+                                                  Adj R-squared   =     0.3726
+                                                  Within R-sq.    =     0.0954
+                                                  Root MSE        = 53492.0181
+
+--------------------------------------------------------------------------------------------------
+                                 |               Robust
+                         incwage | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------------------+----------------------------------------------------------------
+                         married |   5871.444   111.3352    52.74   0.000     5653.231    6089.657
+                                 |
+                          female |
+                         Female  |  -14204.73    154.263   -92.08   0.000    -14507.08   -13902.38
+                                 |
+                      chlt5_pres |
+       At least 1 child under 5  |   2058.065    276.897     7.43   0.000     1515.356    2600.773
+                                 |
+               female#chlt5_pres |
+Female#At least 1 child under 5  |  -811.6935   309.8778    -2.62   0.009    -1419.044   -204.3434
+                                 |
+                          nchild |   2276.148   60.10704    37.87   0.000     2158.341    2393.956
+                             age |   2187.867   65.38987    33.46   0.000     2059.705    2316.029
+                                 |
+                     c.age#c.age |  -15.40734   .8446854   -18.24   0.000    -17.06289   -13.75178
+                                 |
+                           metro |   7182.202   134.5059    53.40   0.000     6918.575    7445.829
+                        uhrswork |   1118.639   6.704836   166.84   0.000     1105.498     1131.78
+                           _cons |  -51826.99   1240.827   -41.77   0.000    -54258.97   -49395.01
+--------------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         occ |       525           0         525     |
+ educ_simple |         9           1           8     |
+   classwkrd |         8           1           7    ?|
+-----------------------------------------------------+
+? = number of redundant parameters may be higher
+
+. 
+. *------------------------------Regressions With Sample Restrictions-------------------------*
+. *Sample Restriction 1
+. sum incwage, detail
+
+                   wage and salary income
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%         1000              4
+ 5%         5900              4
+10%        12000              4       Obs             926,229
+25%        25000              4       Sum of wgt.     926,229
+
+50%        45000                      Mean           60716.04
+                        Largest       Std. dev.      67445.48
+75%        75000         717000
+90%       118000         717000       Variance       4.55e+09
+95%       155000         717000       Skewness       4.306366
+99%       421000         717000       Kurtosis       29.40489
+
+. gen incwage_p1 = .
+(1,166,388 missing values generated)
+
+. replace incwage_p1 = incwage if incwage > r(p1) & incwage < r(p99)
+(905,873 real changes made)
+
+. 
+. reghdfe incwage_p1 married i.female##i.child_pres age c.age#c.age metro uhrswork, absorb(i.occ i.educ_simple i.clas
+> swkrd) vce(robust)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    902,358
+Absorbing 3 HDFE groups                           F(   8, 901810) =   13653.81
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.4417
+                                                  Adj R-squared   =     0.4413
+                                                  Within R-sq.    =     0.1306
+                                                  Root MSE        = 35980.5210
+
+------------------------------------------------------------------------------------------
+                         |               Robust
+              incwage_p1 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+                 married |   4291.765   81.48417    52.67   0.000     4132.059    4451.471
+                         |
+                  female |
+                 Female  |  -6248.703   118.0882   -52.92   0.000    -6480.152   -6017.254
+                         |
+              child_pres |
+       At least 1 child  |   8510.552   128.5101    66.22   0.000     8258.677    8762.428
+                         |
+       female#child_pres |
+Female#At least 1 child  |  -8687.174   154.8617   -56.10   0.000    -8990.698    -8383.65
+                         |
+                     age |   2416.036   44.65343    54.11   0.000     2328.517    2503.555
+                         |
+             c.age#c.age |  -21.12083   .5732381   -36.84   0.000    -22.24436   -19.99731
+                         |
+                   metro |   6023.307   106.8906    56.35   0.000     5813.805    6232.809
+                uhrswork |   913.8017   4.603752   198.49   0.000     904.7785    922.8249
+                   _cons |  -48650.79   850.7022   -57.19   0.000    -50318.13   -46983.44
+------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         occ |       525           0         525     |
+ educ_simple |         9           1           8     |
+   classwkrd |         8           1           7    ?|
+-----------------------------------------------------+
+? = number of redundant parameters may be higher
+
+. 
+. reghdfe incwage_p1 married i.female##i.chlt5_pres nchild age c.age#c.age metro uhrswork, absorb(i.occ i.educ_simple
+>  i.classwkrd) vce(robust)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    902,358
+Absorbing 3 HDFE groups                           F(   9, 901809) =   12012.39
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.4395
+                                                  Adj R-squared   =     0.4392
+                                                  Within R-sq.    =     0.1273
+                                                  Root MSE        = 36049.6791
+
+--------------------------------------------------------------------------------------------------
+                                 |               Robust
+                      incwage_p1 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------------------+----------------------------------------------------------------
+                         married |    4998.19   80.79428    61.86   0.000     4839.836    5156.544
+                                 |
+                          female |
+                         Female  |  -10230.57    105.027   -97.41   0.000    -10436.42   -10024.72
+                                 |
+                      chlt5_pres |
+       At least 1 child under 5  |   2373.215   176.2826    13.46   0.000     2027.707    2718.723
+                                 |
+               female#chlt5_pres |
+Female#At least 1 child under 5  |   -1076.12   207.5335    -5.19   0.000    -1482.879   -669.3618
+                                 |
+                          nchild |   1214.188   39.75826    30.54   0.000     1136.263    1292.113
+                             age |   2396.568    44.9998    53.26   0.000     2308.369    2484.766
+                                 |
+                     c.age#c.age |  -20.33973   .5765637   -35.28   0.000    -21.46977   -19.20968
+                                 |
+                           metro |   6063.098   107.0957    56.61   0.000     5853.194    6273.002
+                        uhrswork |   929.6627    4.61711   201.35   0.000     920.6133    938.7121
+                           _cons |  -47761.72   860.0404   -55.53   0.000    -49447.37   -46076.07
+--------------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         occ |       525           0         525     |
+ educ_simple |         9           1           8     |
+   classwkrd |         8           1           7    ?|
+-----------------------------------------------------+
+? = number of redundant parameters may be higher
+
+. 
+. sum incwage_p1 if e(sample), detail
+
+                         incwage_p1
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%         2200           1100
+ 5%         7000           1100
+10%        12000           1100       Obs             902,358
+25%        25000           1100       Sum of wgt.     902,358
+
+50%        45000                      Mean           56655.47
+                        Largest       Std. dev.      48139.05
+75%        73000         419000
+90%       111000         419000       Variance       2.32e+09
+95%       150000         419000       Skewness       2.399423
+99%       248000         420000       Kurtosis       12.36169
+
+. 
+. drop incwage_p1
+
+. 
+. *Sample Restriction 2
+. sum incwage, detail
+
+                   wage and salary income
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%         1000              4
+ 5%         5900              4
+10%        12000              4       Obs             926,229
+25%        25000              4       Sum of wgt.     926,229
+
+50%        45000                      Mean           60716.04
+                        Largest       Std. dev.      67445.48
+75%        75000         717000
+90%       118000         717000       Variance       4.55e+09
+95%       155000         717000       Skewness       4.306366
+99%       421000         717000       Kurtosis       29.40489
+
+. gen incwage_p5 = .
+(1,166,388 missing values generated)
+
+. replace incwage_p5 = incwage if incwage > r(p5) & incwage < r(p95)
+(833,008 real changes made)
+
+. 
+. reghdfe incwage_p5 married i.female##i.child_pres age c.age#c.age metro uhrswork, absorb(i.occ i.educ_simple i.clas
+> swkrd) vce(robust)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    829,576
+Absorbing 3 HDFE groups                           F(   8, 829028) =   14904.52
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.4553
+                                                  Adj R-squared   =     0.4550
+                                                  Within R-sq.    =     0.1423
+                                                  Root MSE        = 23940.4974
+
+------------------------------------------------------------------------------------------
+                         |               Robust
+              incwage_p5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+                 married |   3375.043   59.25449    56.96   0.000     3258.906     3491.18
+                         |
+                  female |
+                 Female  |  -3809.047   83.74612   -45.48   0.000    -3973.186   -3644.907
+                         |
+              child_pres |
+       At least 1 child  |   5239.303    86.3176    60.70   0.000     5070.123    5408.483
+                         |
+       female#child_pres |
+Female#At least 1 child  |  -6260.061   107.8542   -58.04   0.000    -6471.452   -6048.671
+                         |
+                     age |   2165.013   31.69595    68.31   0.000      2102.89    2227.136
+                         |
+             c.age#c.age |  -20.80059   .4025877   -51.67   0.000    -21.58965   -20.01154
+                         |
+                   metro |   4768.852   80.68323    59.11   0.000     4610.716    4926.989
+                uhrswork |   692.6729   3.348963   206.83   0.000      686.109    699.2367
+                   _cons |  -33732.62   610.1593   -55.28   0.000    -34928.51   -32536.73
+------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         occ |       525           0         525     |
+ educ_simple |         9           1           8     |
+   classwkrd |         8           1           7    ?|
+-----------------------------------------------------+
+? = number of redundant parameters may be higher
+
+. 
+. reghdfe incwage_p5 married i.female##i.chlt5_pres nchild age c.age#c.age metro uhrswork, absorb(i.occ i.educ_simple
+>  i.classwkrd) vce(robust)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    829,576
+Absorbing 3 HDFE groups                           F(   9, 829027) =   12956.49
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.4530
+                                                  Adj R-squared   =     0.4527
+                                                  Within R-sq.    =     0.1387
+                                                  Root MSE        = 23990.9578
+
+--------------------------------------------------------------------------------------------------
+                                 |               Robust
+                      incwage_p5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------------------+----------------------------------------------------------------
+                         married |   3860.089   58.66598    65.80   0.000     3745.105    3975.072
+                                 |
+                          female |
+                         Female  |  -6565.225   71.14073   -92.29   0.000    -6704.659   -6425.792
+                                 |
+                      chlt5_pres |
+       At least 1 child under 5  |   2251.759   114.5802    19.65   0.000     2027.186    2476.332
+                                 |
+               female#chlt5_pres |
+Female#At least 1 child under 5  |  -1435.148   142.6164   -10.06   0.000    -1714.672   -1155.625
+                                 |
+                          nchild |   413.9163   26.90211    15.39   0.000     361.1891    466.6436
+                             age |   2183.567   31.98038    68.28   0.000     2120.887    2246.247
+                                 |
+                     c.age#c.age |  -20.65766   .4059089   -50.89   0.000    -21.45323   -19.86209
+                                 |
+                           metro |   4784.612   80.86151    59.17   0.000     4626.126    4943.097
+                        uhrswork |   702.6312   3.360081   209.11   0.000     696.0456    709.2169
+                           _cons |  -33702.72   616.6288   -54.66   0.000    -34911.29   -32494.15
+--------------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+         occ |       525           0         525     |
+ educ_simple |         9           1           8     |
+   classwkrd |         8           1           7    ?|
+-----------------------------------------------------+
+? = number of redundant parameters may be higher
+
+. 
+. sum incwage_p5 if e(sample), detail
+
+                         incwage_p5
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%         7000           6000
+ 5%        11000           6000
+10%        15400           6000       Obs             829,576
+25%        27000           6000       Sum of wgt.     829,576
+
+50%        45000                      Mean           51680.12
+                        Largest       Std. dev.      32428.33
+75%        70000         154000
+90%       100000         154000       Variance       1.05e+09
+95%       120000         154000       Skewness       .9442684
+99%       150000         154000       Kurtosis        3.40183
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:\Users\jaker\Documents\MS_in_Economics_and_CS\ECON550_Econometrics\Stata_Project\FinalProjectLog_Chaud
+> hariKasroviReichlin.txt
+  log type:  text
+ closed on:  11 Mar 2022, 16:04:42
+---------------------------------------------------------------------------------------------------------------------
